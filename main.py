@@ -107,7 +107,7 @@ def add_event_cli():
 def run_cli():
     while True:
         print_menu()
-        choice = input("Choose an option: ").strip()
+        choice = input("Pick your hangover spot: ").strip()
 
         if choice == "1":
             register_user()
