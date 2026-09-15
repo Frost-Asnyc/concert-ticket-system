@@ -1,1 +1,11 @@
-[]
+[
+    {
+        "booking_id": "B001",
+        "user_id": "20090",
+        "event_id": "320990",
+        "quantity": 4,
+        "price_per_ticket": 2000,
+        "total_price": 8000,
+        "status": "confirmed"
+    }
+]

@@ -1,1 +1,58 @@
-[]
+[
+  {
+    "event_id": "E001",
+    "name": "Summer Music Festival",
+    "date": "2026-07-18",
+    "venue": "Central Park",
+    "available_seats": 250
+  },
+  {
+    "event_id": "E002",
+    "name": "Live Jazz Night",
+    "date": "2026-08-02",
+    "venue": "Blue Note Hall",
+    "available_seats": 80
+  },
+  {
+    "event_id": "E003",
+    "name": "Winter Concert",
+    "date": "2026-12-12",
+    "venue": "City Arena",
+    "available_seats": 500
+  },
+  {
+    "event_id": "E004",
+    "name": "Premier League Watch Party",
+    "date": "2026-09-20",
+    "venue": "Community Sports Hall",
+    "available_seats": 300
+  },
+  {
+    "event_id": "E005",
+    "name": "Summer Fest",
+    "date": "2026-09-27",
+    "venue": "Riverside Grounds",
+    "available_seats": 400
+  },
+  {
+    "event_id": "E006",
+    "name": "Movie Night Drive-In",
+    "date": "2026-10-03",
+    "venue": "Sunset Park",
+    "available_seats": 120
+  },
+  {
+    "event_id": "E007",
+    "name": "Comedy Night Live",
+    "date": "2026-10-10",
+    "venue": "Downtown Theatre",
+    "available_seats": 180
+  },
+  {
+    "event_id": "E008",
+    "name": "Food and Culture Expo",
+    "date": "2026-10-24",
+    "venue": "Exhibition Centre",
+    "available_seats": 600
+  }
+]

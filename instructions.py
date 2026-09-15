@@ -17,6 +17,7 @@
 #   6. My Tickets
 #   7. Cancel Ticket
 #   8. Exit
+#   9. Add Event
 #
 # Extra beginner note:
 #   - This project uses models/event.py for events.
@@ -24,6 +25,6 @@
 #   - This project uses models/booking.py for bookings.
 #   - Data is stored in data/event.json, data/ticket.json and data/booking.json.
 #
-# You may add events with option 9 in the simple CLI, or just use the
-# event model directly in code while learning.
+# You can add events with option 9 in the simple CLI. You can also edit
+# data/event.json directly while learning.
 

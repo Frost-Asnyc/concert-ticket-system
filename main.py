@@ -23,6 +23,7 @@ def print_menu():
     print("6. My Tickets")
     print("7. Cancel Ticket")
     print("8. Exit")
+    print("9. Add Event")
 
 
 def register_user():
@@ -107,7 +108,7 @@ def add_event_cli():
 def run_cli():
     while True:
         print_menu()
-        choice = input("Pick your hangover spot: ").strip()
+        choice = input("Choose an option: ").strip()
 
         if choice == "1":
             register_user()
@@ -124,7 +125,7 @@ def run_cli():
         elif choice == "7":
             cancel_ticket_cli()
         elif choice == "8":
-            print("(Touch more grass next time you lazy couch grape)!")
+            print("Thank you for using the Event Ticket System. Goodbye!")
             break
         elif choice == "9":
             add_event_cli()

@@ -1,1 +1,8 @@
-[]
+[
+    {
+        "ticket_id": "T001",
+        "user_id": "20090",
+        "event_id": "320990",
+        "status": "active"
+    }
+]
