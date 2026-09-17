@@ -1,6 +1,7 @@
 import json
 import os
 
+from models.event import get_event_by_id, update_event_seats
 
 BOOKINGS_FILE = "data/booking.json"
 
@@ -71,11 +72,18 @@ def save_bookings(bookings, filepath=BOOKINGS_FILE):
 def generate_booking_id(bookings):
     if not bookings:
         return "B001"
-    number = int(bookings[-1].booking_id.replace("B", "")) + 1
+    number = max(int(booking.booking_id.replace("B", "")) for booking in bookings) + 1
     return f"B{number:03d}"
 
 
-def create_booking(user_id, event_id, quantity, price_per_ticket, filepath=BOOKINGS_FILE):
+def create_booking(
+    user_id,
+    event_id,
+    quantity,
+    price_per_ticket,
+    filepath=BOOKINGS_FILE,
+    event_filepath=None,
+):
     if not user_id or not event_id:
         return False, "user_id and event_id are required"
 
@@ -87,6 +95,15 @@ def create_booking(user_id, event_id, quantity, price_per_ticket, filepath=BOOKI
 
     if quantity <= 0:
         return False, "quantity must be positive"
+    if price_per_ticket < 0:
+        return False, "price_per_ticket cannot be negative"
+
+    if event_filepath is not None:
+        event = get_event_by_id(event_id, event_filepath)
+        if event is None:
+            return False, "event not found"
+        if event.available_seats < quantity:
+            return False, "not enough available seats"
 
     bookings = load_bookings(filepath)
     booking = Booking(
@@ -99,6 +116,10 @@ def create_booking(user_id, event_id, quantity, price_per_ticket, filepath=BOOKI
     )
     bookings.append(booking)
     save_bookings(bookings, filepath)
+
+    if event_filepath is not None:
+        update_event_seats(event_id, -quantity, event_filepath)
+
     return True, booking
 
 
@@ -113,7 +134,7 @@ def get_booking_by_id(booking_id, filepath=BOOKINGS_FILE):
     return None
 
 
-def cancel_booking(booking_id, filepath=BOOKINGS_FILE):
+def cancel_booking(booking_id, filepath=BOOKINGS_FILE, event_filepath=None):
     bookings = load_bookings(filepath)
     for booking in bookings:
         if booking.booking_id == booking_id:
@@ -121,6 +142,8 @@ def cancel_booking(booking_id, filepath=BOOKINGS_FILE):
                 return False, "booking already cancelled"
             booking.status = "cancelled"
             save_bookings(bookings, filepath)
+            if event_filepath is not None:
+                update_event_seats(booking.event_id, booking.quantity, event_filepath)
             return True, booking
     return False, "booking not found"
 

@@ -7,5 +7,14 @@
         "price_per_ticket": 2000,
         "total_price": 8000,
         "status": "confirmed"
+    },
+    {
+        "booking_id": "B002",
+        "user_id": "2",
+        "event_id": "e003",
+        "quantity": 3,
+        "price_per_ticket": 200,
+        "total_price": 600,
+        "status": "confirmed"
     }
 ]

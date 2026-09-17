@@ -2,13 +2,15 @@ import json
 import os
 
 from models.event import create_event, list_events, search_events
-from models.ticket import create_ticket, cancel_ticket, get_tickets_by_user
+from models.ticket import create_tickets, cancel_ticket, get_tickets_by_user
 from models.booking import create_booking
+from models.user import register_user as save_user, login_user as authenticate_user
 
 
 EVENTS_FILE = "data/event.json"
 TICKETS_FILE = "data/ticket.json"
 BOOKINGS_FILE = "data/booking.json"
+current_user = None
 
 
 def print_menu():
@@ -27,11 +29,26 @@ def print_menu():
 
 
 def register_user():
-    print("Registration is ready to be added later.")
+    username = input("Username: ").strip()
+    email = input("Email: ").strip()
+    password = input("Password: ")
+    ok, result = save_user(username, email, password)
+    if ok:
+        print(f"Registered successfully. Your user ID is {result.user_id}.")
+    else:
+        print(result)
 
 
 def login_user():
-    print("Login is ready to be added later.")
+    global current_user
+    username = input("Username: ").strip()
+    password = input("Password: ")
+    ok, result = authenticate_user(username, password)
+    if ok:
+        current_user = result
+        print(f"Logged in as {result.username}.")
+    else:
+        print(result)
 
 
 def view_events():
@@ -56,25 +73,41 @@ def search_events_cli():
 
 
 def book_ticket():
+    if current_user is None:
+        print("Please login first.")
+        return
     event_id = input("Event ID: ").strip()
-    user_id = input("User ID: ").strip()
     quantity = input("Number of tickets: ").strip()
     price = input("Price per ticket: ").strip()
 
-    ok, booking = create_booking(user_id, event_id, quantity, price, BOOKINGS_FILE)
+    ok, booking = create_booking(
+        current_user.user_id,
+        event_id,
+        quantity,
+        price,
+        BOOKINGS_FILE,
+        EVENTS_FILE,
+    )
     if ok:
-        ok_ticket, ticket = create_ticket(user_id, event_id, TICKETS_FILE)
+        ok_ticket, tickets = create_tickets(
+            current_user.user_id, event_id, booking.quantity, TICKETS_FILE
+        )
         if ok_ticket:
-            print(f"Booked. Booking: {booking.booking_id}. Ticket: {ticket.ticket_id}")
+            print(
+                f"Booked {len(tickets)} ticket(s). Booking: {booking.booking_id}. "
+                f"Tickets: {', '.join(ticket.ticket_id for ticket in tickets)}"
+            )
         else:
-            print(ticket)
+            print(tickets)
     else:
         print(booking)
 
 
 def my_tickets():
-    user_id = input("User ID: ").strip()
-    tickets = get_tickets_by_user(user_id, TICKETS_FILE)
+    if current_user is None:
+        print("Please login first.")
+        return
+    tickets = get_tickets_by_user(current_user.user_id, TICKETS_FILE)
     if not tickets:
         print("No tickets found for that user.")
         return
@@ -84,8 +117,16 @@ def my_tickets():
 
 
 def cancel_ticket_cli():
+    if current_user is None:
+        print("Please login first.")
+        return
     ticket_id = input("Ticket ID: ").strip()
-    ok, result = cancel_ticket(ticket_id, TICKETS_FILE)
+    ok, result = cancel_ticket(
+        ticket_id,
+        TICKETS_FILE,
+        EVENTS_FILE,
+        current_user.user_id,
+    )
     if ok:
         print(f"Ticket {ticket_id} cancelled.")
     else:
@@ -93,6 +134,9 @@ def cancel_ticket_cli():
 
 
 def add_event_cli():
+    if current_user is None or current_user.role != "admin":
+        print("Admin access required.")
+        return
     name = input("Event name: ").strip()
     date = input("Event date: ").strip()
     venue = input("Venue: ").strip()

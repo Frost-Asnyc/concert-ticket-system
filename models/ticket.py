@@ -1,6 +1,7 @@
 import json
 import os
 
+from models.event import update_event_seats
 from utils.validators import not_empty
 
 TICKETS_FILE = "data/ticket.json"
@@ -33,8 +34,14 @@ def load_tickets(filepath=TICKETS_FILE):
     if not os.path.exists(filepath):
         return []
 
-    with open(filepath, "r") as f:
-        data = json.load(f)
+    try:
+        with open(filepath, "r") as f:
+            data = json.load(f)
+    except (json.JSONDecodeError, OSError):
+        return []
+
+    if not isinstance(data, list):
+        return []
 
     tickets = []
     for item in data:
@@ -54,21 +61,43 @@ def save_tickets(tickets, filepath=TICKETS_FILE):
 
 
 def generate_ticket_id(tickets):
-    return "T" + str(len(tickets) + 1).zfill(3)
+    if not tickets:
+        return "T001"
+    number = max(int(ticket.ticket_id.replace("T", "")) for ticket in tickets) + 1
+    return f"T{number:03d}"
 
 
 def create_ticket(user_id, event_id, filepath=TICKETS_FILE):
+    tickets = create_tickets(user_id, event_id, 1, filepath)
+    if not tickets[0]:
+        return tickets
+    return True, tickets[1][0]
+
+
+def create_tickets(user_id, event_id, quantity, filepath=TICKETS_FILE):
     if not not_empty(user_id) or not not_empty(event_id):
         return False, "user_id and event_id are required"
 
-    tickets = load_tickets(filepath)
-    new_id = generate_ticket_id(tickets)
-    ticket = Ticket(new_id, user_id, event_id, "active")
+    try:
+        quantity = int(quantity)
+    except (TypeError, ValueError):
+        return False, "quantity must be an integer"
+    if quantity <= 0:
+        return False, "quantity must be positive"
 
-    tickets.append(ticket)
+    tickets = load_tickets(filepath)
+    created = []
+    next_number = max(
+        (int(ticket.ticket_id.replace("T", "")) for ticket in tickets),
+        default=0,
+    ) + 1
+    for offset in range(quantity):
+        created.append(Ticket(f"T{next_number + offset:03d}", user_id, event_id, "active"))
+
+    tickets.extend(created)
     save_tickets(tickets, filepath)
 
-    return True, ticket
+    return True, created
 
 
 def get_tickets_by_user(user_id, filepath=TICKETS_FILE):
@@ -88,15 +117,19 @@ def get_ticket_by_id(ticket_id, filepath=TICKETS_FILE):
     return None
 
 
-def cancel_ticket(ticket_id, filepath=TICKETS_FILE):
+def cancel_ticket(ticket_id, filepath=TICKETS_FILE, event_filepath=None, owner_user_id=None):
     tickets = load_tickets(filepath)
 
     for t in tickets:
         if t.ticket_id == ticket_id:
+            if owner_user_id is not None and t.user_id != owner_user_id:
+                return False, "you can only cancel your own tickets"
             if t.status == "cancelled":
                 return False, "ticket already cancelled"
             t.status = "cancelled"
             save_tickets(tickets, filepath)
+            if event_filepath is not None:
+                update_event_seats(t.event_id, 1, event_filepath)
             return True, t
 
     return False, "ticket not found"

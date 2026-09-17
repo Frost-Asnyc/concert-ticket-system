@@ -9,11 +9,12 @@ USERS_FILE = "data/users.json"
 
 
 class User:
-    def __init__(self, user_id, username, email, password_hash):
+    def __init__(self, user_id, username, email, password_hash, role="user"):
         self.user_id = user_id
         self.username = username
         self.email = email
         self.password_hash = password_hash
+        self.role = role
 
     def __str__(self):
         return f"{self.user_id} - {self.username}"
@@ -31,7 +32,13 @@ def load_users(filepath=USERS_FILE):
 
     users = []
     for item in data:
-        user = User(item["user_id"], item["username"], item["email"], item["password_hash"])
+        user = User(
+            item["user_id"],
+            item["username"],
+            item["email"],
+            item["password_hash"],
+            item.get("role", "user"),
+        )
         users.append(user)
     return users
 
@@ -48,6 +55,7 @@ def save_users(users, filepath=USERS_FILE):
             "username": user.username,
             "email": user.email,
             "password_hash": user.password_hash,
+            "role": user.role,
         })
 
     with open(filepath, "w") as f:
@@ -57,7 +65,7 @@ def save_users(users, filepath=USERS_FILE):
 def generate_user_id(users):
     if not users:
         return "U001"
-    number = int(users[-1].user_id.replace("U", "")) + 1
+    number = max(int(user.user_id.replace("U", "")) for user in users) + 1
     return f"U{number:03d}"
 
 

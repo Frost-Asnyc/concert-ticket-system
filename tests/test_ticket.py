@@ -2,6 +2,7 @@ import pytest
 
 from models.ticket import (
     create_ticket,
+    create_tickets,
     get_tickets_by_user,
     get_ticket_by_id,
     cancel_ticket,
@@ -70,3 +71,17 @@ def test_cancel_twice_fails(test_file):
 def test_cancel_ticket_not_found(test_file):
     ok, msg = cancel_ticket("T999", test_file)
     assert ok is False
+
+
+def test_create_tickets_creates_requested_quantity(test_file):
+    ok, tickets = create_tickets("U001", "E001", 5, test_file)
+    assert ok is True
+    assert len(tickets) == 5
+    assert len(get_tickets_by_user("U001", test_file)) == 5
+
+
+def test_cancel_ticket_requires_owner(test_file):
+    _, created = create_ticket("U001", "E001", test_file)
+    ok, message = cancel_ticket(created.ticket_id, test_file, owner_user_id="U002")
+    assert ok is False
+    assert message == "you can only cancel your own tickets"
